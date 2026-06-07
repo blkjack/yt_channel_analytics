@@ -1,0 +1,47 @@
+# Optional: fully automated daily upload via GitHub Actions (free for public repos).
+#
+# To use it:
+#   1. Move this file to  .github/workflows/daily.yml  in the repo root.
+#   2. Generate an OAuth token once locally (python upload_short.py --latest),
+#      then base64-encode secrets/token.json and secrets/client_secret.json and
+#      add them as repo secrets YT_TOKEN_B64 and YT_CLIENT_SECRET_B64
+#      (Settings -> Secrets and variables -> Actions).
+#   3. The job runs on a schedule and uploads one new short each day.
+#
+# NOTE: refresh tokens can expire; if uploads start failing, re-run the local
+# auth flow and update the YT_TOKEN_B64 secret.
+
+name: Daily Short
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 13:00 UTC daily
+  workflow_dispatch: {}
+
+jobs:
+  make-and-upload:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: faceless_shorts
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg espeak-ng
+
+      - name: Install Python deps
+        run: pip install -r requirements.txt
+
+      - name: Restore credentials
+        run: |
+          mkdir -p secrets
+          echo "${{ secrets.YT_CLIENT_SECRET_B64 }}" | base64 -d > secrets/client_secret.json
+          echo "${{ secrets.YT_TOKEN_B64 }}" | base64 -d > secrets/token.json
+
+      - name: Generate and upload one short
+        run: python make_short.py --upload

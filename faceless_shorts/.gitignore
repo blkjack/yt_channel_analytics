@@ -1,0 +1,23 @@
+# Generated videos & intermediates
+output/
+*.mp4
+*.mp3
+*.wav
+
+# Secrets — NEVER commit these
+secrets/
+*client_secret*.json
+*token*.json
+
+# Local background/music assets (large, optional)
+assets/backgrounds/*.mp4
+assets/backgrounds/*.mov
+assets/backgrounds/*.webm
+assets/music/*.mp3
+assets/music/*.wav
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

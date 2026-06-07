@@ -1,0 +1,61 @@
+# ============================================================================
+# Faceless YouTube Shorts - configuration
+# Edit this file to customise your channel. All settings have sane defaults.
+# ============================================================================
+
+channel:
+  name: "Daily Motivation"
+  handle: "@dailymotivation"          # shown as a watermark at the bottom
+
+video:
+  width: 1080
+  height: 1920
+  fps: 30
+  lead_in: 0.6        # seconds of silence before the voice starts
+  tail: 1.8           # seconds of breathing room after the voice ends
+  max_duration: 58    # hard cap (YouTube Shorts must be <= 60s)
+
+tts:
+  engine: auto              # auto | edge | espeak
+                            #   auto  -> try edge-tts (online, best), fall back to espeak (offline)
+                            #   edge  -> force edge-tts (free, needs internet)
+                            #   espeak-> force espeak-ng (offline, robotic; good for testing)
+  edge_voice: en-US-GuyNeural   # try: en-US-AriaNeural, en-US-ChristopherNeural, en-GB-RyanNeural
+  edge_rate: "-8%"              # speak a little slower for gravitas
+  espeak_voice: en-us+m3
+  espeak_speed: 145
+
+text:
+  font: ""                  # empty -> bundled DejaVu Sans Bold; or path to a .ttf
+  author_font: ""
+  max_font_size: 100
+  min_font_size: 46
+  color: "#FFFFFF"
+  stroke_color: "#000000"
+  stroke_width: 7
+  show_quote_marks: true
+
+background:
+  mode: auto                # auto | gradient | video
+                            #   auto     -> use a random video from videos_dir if any, else gradient
+                            #   gradient -> always generate an animated gradient (no assets needed)
+                            #   video    -> require a video from videos_dir
+  videos_dir: assets/backgrounds
+  music_dir: assets/music
+  music_volume: 0.12        # 0 disables; otherwise music is ducked under the voice
+  overlay_darken: 0.42      # 0..1, how much to darken the bg for text contrast
+  vignette: true
+
+quotes:
+  source: local             # local | zenquotes (zenquotes = free online API, no key)
+  bank: assets/quotes.json
+  avoid_repeats_file: output/.used_quotes.json   # remembers recent quotes to avoid repeats
+
+upload:
+  privacy: private          # private | unlisted | public  (start with private!)
+  category_id: "22"         # 22 = People & Blogs
+  client_secret: secrets/client_secret.json
+  token: secrets/token.json
+  default_hashtags: ["#Shorts", "#motivation", "#inspiration", "#success", "#mindset"]
+
+output_dir: output

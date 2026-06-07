@@ -1,0 +1,13 @@
+# Core (video generation)
+edge-tts>=6.1.9          # free high-quality TTS (online)
+Pillow>=10.0.0           # text rendering
+PyYAML>=6.0             # config
+
+# Upload to YouTube (only needed for `make_short.py --upload` / `upload_short.py`)
+google-api-python-client>=2.100.0
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.1.0
+
+# System dependencies (install separately, NOT via pip):
+#   ffmpeg      -> apt-get install ffmpeg      (required)
+#   espeak-ng   -> apt-get install espeak-ng   (optional offline TTS fallback)
