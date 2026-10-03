@@ -1,6 +1,9 @@
+import os
 import streamlit as st
 import pandas as pd
 from datetime import timedelta, datetime
+
+from searchapi_youtube import SearchApiError, SearchApiYouTube
 
 st.set_page_config(page_title="YT Channel Analytics", layout="wide")
 
@@ -108,6 +111,10 @@ with st.sidebar:
     time_frame = st.selectbox("Select Time Frame", ["Daily", "Weekly", "Monthly", "Quarterly"])
     chart_selection = st.selectbox("Select Chart Type", ["Bar", "Area"])
 
+    st.header("🔴 Live Channel")
+    st.caption("Compare against any public channel via [SearchApi](https://www.searchapi.io).")
+    live_channel_id = st.text_input("YouTube Channel ID", placeholder="UC...")
+
 # Prepare data based on selected time frame
 if time_frame == 'Daily':
     df_display = df.set_index('DATE')
@@ -146,3 +153,34 @@ for col, (title, metric_column, color) in zip(cols, metrics):
 
 with st.expander("View Data (Selected Time Frame)"):
     st.dataframe(df_filtered)
+
+# Live public channel data via SearchApi
+@st.cache_data(ttl=3600, show_spinner="Fetching channel from SearchApi...")
+def load_live_channel(channel_id):
+    api_key = os.environ.get("SEARCHAPI_API_KEY")
+    if not api_key:
+        try:
+            api_key = st.secrets.get("SEARCHAPI_API_KEY")
+        except FileNotFoundError:  # no secrets.toml configured
+            pass
+    return SearchApiYouTube(api_key=api_key).fetch_channel(channel_id)
+
+if live_channel_id:
+    st.subheader("Live Channel (via SearchApi)")
+    try:
+        channel, videos = load_live_channel(live_channel_id.strip())
+    except SearchApiError as e:
+        st.error(f"Could not load channel: {e}")
+    else:
+        cols = st.columns(3)
+        cols[0].metric("Channel", channel["TITLE"] or live_channel_id)
+        cols[1].metric("Subscribers", format_number(channel["SUBSCRIBERS"] or 0))
+        cols[2].metric("Views (fetched videos)", format_number(int(videos["VIEWS"].fillna(0).sum())))
+        if videos.empty:
+            st.info("No videos returned for this channel.")
+        else:
+            with st.container(border=True):
+                st.bar_chart(videos.dropna(subset=["PUBLISHED"]), x="PUBLISHED", y="VIEWS", color='#df336b', height=250)
+                st.caption("Publish dates are approximated from YouTube's relative times (e.g. '3 weeks ago').")
+            with st.expander("View Videos"):
+                st.dataframe(videos, column_config={"LINK": st.column_config.LinkColumn()})
